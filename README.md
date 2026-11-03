@@ -10,8 +10,8 @@ AgentPulse tracks LLM pricing changes across 300+ models on OpenRouter and monit
 
 ```bash
 # Install
-git clone https://github.com/your-org/agentpulse.git
-cd agentpulse
+git clone https://github.com/wjianwei666/developer-pulse.git
+cd developer-pulse
 pip install -e .
 
 # Run
