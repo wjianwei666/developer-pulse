@@ -24,9 +24,9 @@ def build_rss() -> str:
     rss = Element("rss", {"version": "2.0"})
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = "AgentPulse — AI Agent Ecosystem & Model Price Monitor"
-    SubElement(channel, "link").text = "https://agentpulse.local"
+    SubElement(channel, "link").text = "https://developer.zhiyuanyundun.com"
     SubElement(channel, "description").text = (
-        "Real-time monitoring of LLM pricing changes and breaking changes in the AI agent ecosystem."
+        "Model pricing & ecosystem change intelligence for agent builders — real-time LLM price changes and breaking changes in the AI agent ecosystem."
     )
     SubElement(channel, "lastBuildDate").text = datetime.now(timezone.utc).strftime(
         "%a, %d %b %Y %H:%M:%S GMT"
@@ -41,7 +41,7 @@ def build_rss() -> str:
             sign = "+" if ev["change_pct"] >= 0 else ""
             title_parts.append(f"{sign}{ev['change_pct']:.2f}%")
         SubElement(item, "title").text = " ".join(title_parts)
-        SubElement(item, "link").text = ev.get("source_url") or "https://agentpulse.local"
+        SubElement(item, "link").text = ev.get("source_url") or "https://developer.zhiyuanyundun.com"
         SubElement(item, "guid").text = f"price-{ev['id']}"
         SubElement(item, "pubDate").text = ev["detected_at"]
         desc = []
@@ -57,7 +57,7 @@ def build_rss() -> str:
     for ev in release_events:
         item = SubElement(channel, "item")
         SubElement(item, "title").text = f"[{ev['breaking_grade'].upper()}] {ev['repo']} {ev['tag']}"
-        SubElement(item, "link").text = ev.get("source_url") or "https://agentpulse.local"
+        SubElement(item, "link").text = ev.get("source_url") or "https://developer.zhiyuanyundun.com"
         SubElement(item, "guid").text = f"release-{ev['id']}"
         SubElement(item, "pubDate").text = ev["detected_at"]
         desc = [f"Breaking grade: {ev['breaking_grade']}", f"Impact score: {ev.get('impact_score', 0)}"]

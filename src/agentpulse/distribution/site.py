@@ -371,5 +371,36 @@ def health():
     return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
 
+@app.get("/healthz")
+def healthz():
+    with db_session() as conn:
+        snapshot_count = conn.execute("SELECT COUNT(*) FROM snapshots").fetchone()[0]
+        price_count = conn.execute("SELECT COUNT(*) FROM price_events").fetchone()[0]
+        release_count = conn.execute("SELECT COUNT(*) FROM release_events").fetchone()[0]
+        digest_count = conn.execute("SELECT COUNT(*) FROM digests").fetchone()[0]
+        last_price = conn.execute(
+            "SELECT created_at FROM snapshots WHERE snapshot_type='price' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        last_release = conn.execute(
+            "SELECT created_at FROM snapshots WHERE snapshot_type='release' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+
+    data_healthy = (price_count > 0 or release_count > 0) and digest_count >= 0
+    status = "ok" if data_healthy and snapshot_count > 0 else "degraded"
+
+    return {
+        "status": status,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "data": {
+            "snapshots": snapshot_count,
+            "price_events": price_count,
+            "release_events": release_count,
+            "digests": digest_count,
+            "last_price_snapshot": last_price["created_at"] if last_price else None,
+            "last_release_snapshot": last_release["created_at"] if last_release else None,
+        },
+    }
+
+
 def create_app() -> FastAPI:
     return app

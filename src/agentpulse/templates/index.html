@@ -17,7 +17,7 @@
       </tbody>
     </table>
   {% else %}
-    <p class="muted">No digests yet. Run the digest pipeline to generate one.</p>
+    <p class="loading-state"><span class="loading-dot"></span>Collecting baseline snapshots — first digest arriving shortly.</p>
   {% endif %}
 </div>
 
@@ -44,7 +44,7 @@
       </tbody>
     </table>
   {% else %}
-    <p class="muted">No price events yet.</p>
+    <p class="loading-state"><span class="loading-dot"></span>Baseline price snapshot in progress — events appear on next change detection.</p>
   {% endif %}
 </div>
 
@@ -67,7 +67,7 @@
       </tbody>
     </table>
   {% else %}
-    <p class="muted">No ecosystem events yet.</p>
+    <p class="loading-state"><span class="loading-dot"></span>Scanning agent framework releases — breaking changes listed here.</p>
   {% endif %}
 </div>
 {% endblock %}
