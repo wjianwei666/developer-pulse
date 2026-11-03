@@ -58,9 +58,9 @@ def index(request: Request):
             "SELECT * FROM release_events ORDER BY detected_at DESC LIMIT 10"
         ).fetchall()
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "digests": digests,
             "recent_price": [dict(r) for r in recent_price],
             "recent_release": [dict(r) for r in recent_release],
@@ -75,8 +75,9 @@ def digest_detail(request: Request, digest_date: str):
     if not data:
         raise HTTPException(status_code=404, detail="Digest not found")
     return templates.TemplateResponse(
+        request,
         "digest.html",
-        {"request": request, "digest": data, "digest_date": digest_date},
+        {"digest": data, "digest_date": digest_date},
     )
 
 
@@ -93,8 +94,9 @@ def price_page(request: Request, model: str | None = None, limit: int = Query(10
                 "SELECT * FROM price_events ORDER BY detected_at DESC LIMIT ?", (limit,)
             ).fetchall()
     return templates.TemplateResponse(
+        request,
         "price.html",
-        {"request": request, "events": [dict(r) for r in rows], "model_filter": model},
+        {"events": [dict(r) for r in rows], "model_filter": model},
     )
 
 
@@ -111,8 +113,9 @@ def ecosystem_page(request: Request, repo: str | None = None, limit: int = Query
                 "SELECT * FROM release_events ORDER BY detected_at DESC LIMIT ?", (limit,)
             ).fetchall()
     return templates.TemplateResponse(
+        request,
         "ecosystem.html",
-        {"request": request, "events": [dict(r) for r in rows], "repo_filter": repo},
+        {"events": [dict(r) for r in rows], "repo_filter": repo},
     )
 
 
@@ -195,8 +198,9 @@ def api_trends(model_id: str):
 @app.get("/trends", response_class=HTMLResponse)
 def trends_page(request: Request, model: str = Query(...)):
     return templates.TemplateResponse(
+        request,
         "trends.html",
-        {"request": request, "model_id": model},
+        {"model_id": model},
     )
 
 
@@ -219,7 +223,7 @@ def rss_feed():
 
 @app.get("/search.html", response_class=HTMLResponse)
 def search_page(request: Request):
-    return templates.TemplateResponse("search.html", {"request": request})
+    return templates.TemplateResponse(request, "search.html", {})
 
 
 @app.post("/api/subscribe")

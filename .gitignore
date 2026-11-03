@@ -43,3 +43,7 @@ htmlcov/
 
 # Binary files
 prd.docx
+
+# Deployment helper scripts (contain credentials)
+deploy_*.py
+developer-pulse.tar.gz
