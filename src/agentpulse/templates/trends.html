@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}AgentPulse — Price Trends{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Price Trend: {{ model_id }}</h2>
+  <div id="chart-container" style="width:100%;height:420px;">
+    <svg id="chart" width="100%" height="400" style="background:#0d1117;border-radius:8px;"></svg>
+  </div>
+  <p id="status" class="muted">Loading trend data...</p>
+</div>
+<div class="card">
+  <h2>Raw Data</h2>
+  <table id="data-table">
+    <thead><tr><th>Snapshot</th><th>Input $/1M</th><th>Output $/1M</th><th>Cache Read $/1M</th><th>Captured At</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+<script>
+(async () => {
+  const modelId = "{{ model_id }}";
+  const resp = await fetch("/api/trends/" + encodeURIComponent(modelId));
+  if (!resp.ok) {
+    document.getElementById("status").textContent = "No trend data available.";
+    return;
+  }
+  const data = await resp.json();
+  const trends = data.trends;
+  if (!trends || trends.length === 0) {
+    document.getElementById("status").textContent = "No trend data available.";
+    return;
+  }
+  document.getElementById("status").textContent = data.points + " data points";
+
+  const W = 1100, H = 380, pad = { top: 20, right: 40, bottom: 50, left: 80 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const fields = ["pricing_input", "pricing_output", "pricing_cache_read"];
+  const colors = { pricing_input: "#58a6ff", pricing_output: "#3fb950", pricing_cache_read: "#d29922" };
+  const labels = { pricing_input: "Input", pricing_output: "Output", pricing_cache_read: "Cache Read" };
+
+  let allVals = [];
+  for (const f of fields) {
+    for (const p of trends) {
+      if (p[f] != null) allVals.push(p[f]);
+    }
+  }
+  if (allVals.length === 0) {
+    document.getElementById("status").textContent = "No numeric data to plot.";
+    return;
+  }
+  const yMin = Math.min(...allVals) * 0.9;
+  const yMax = Math.max(...allVals) * 1.1;
+  const yRange = yMax - yMin || 1;
+
+  const xScale = i => pad.left + (i / Math.max(trends.length - 1, 1)) * plotW;
+  const yScale = v => pad.top + plotH - ((v - yMin) / yRange) * plotH;
+
+  const svg = document.getElementById("chart");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  let html = "";
+
+  html += '<line x1="' + pad.left + '" y1="' + (pad.top + plotH) + '" x2="' + (pad.left + plotW) + '" y2="' + (pad.top + plotH) + '" stroke="#30363d" stroke-width="1"/>';
+  html += '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (pad.top + plotH) + '" stroke="#30363d" stroke-width="1"/>';
+
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (i / 4) * plotH;
+    const val = yMin + ((4 - i) / 4) * yRange;
+    html += '<line x1="' + pad.left + '" y1="' + y + '" x2="' + (pad.left + plotW) + '" y2="' + y + '" stroke="#21262d" stroke-width="1"/>';
+    html += '<text x="' + (pad.left - 8) + '" y="' + (y + 4) + '" fill="#8b949e" font-size="10" text-anchor="end">$' + val.toFixed(2) + '</text>';
+  }
+
+  const maxLabels = Math.min(trends.length, 8);
+  for (let i = 0; i < trends.length; i++) {
+    if (trends.length <= 8 || i % Math.floor(trends.length / maxLabels) === 0 || i === trends.length - 1) {
+      const x = xScale(i);
+      const ts = trends[i].created_at ? trends[i].created_at.slice(0, 10) : "";
+      html += '<text x="' + x + '" y="' + (pad.top + plotH + 20) + '" fill="#8b949e" font-size="9" text-anchor="middle" transform="rotate(-30,' + x + ',' + (pad.top + plotH + 20) + ')">' + ts + '</text>';
+    }
+  }
+
+  for (const f of fields) {
+    let pathD = "";
+    for (let i = 0; i < trends.length; i++) {
+      if (trends[i][f] == null) continue;
+      const x = xScale(i);
+      const y = yScale(trends[i][f]);
+      pathD += (i === 0 ? "M" : "L") + x + "," + y + " ";
+    }
+    html += '<path d="' + pathD + '" fill="none" stroke="' + colors[f] + '" stroke-width="2"/>';
+    for (let i = 0; i < trends.length; i++) {
+      if (trends[i][f] == null) continue;
+      const x = xScale(i);
+      const y = yScale(trends[i][f]);
+      html += '<circle cx="' + x + '" cy="' + y + '" r="3" fill="' + colors[f] + '"/>';
+    }
+  }
+
+  let legendX = pad.left + plotW - 250;
+  for (const f of fields) {
+    html += '<rect x="' + legendX + '" y="' + (pad.top + 2) + '" width="12" height="12" fill="' + colors[f] + '" rx="2"/>';
+    html += '<text x="' + (legendX + 18) + '" y="' + (pad.top + 12) + '" fill="#8b949e" font-size="11">' + labels[f] + '</text>';
+    legendX += 80;
+  }
+
+  svg.innerHTML = html;
+
+  const tbody = document.querySelector("#data-table tbody");
+  for (let i = trends.length - 1; i >= 0; i--) {
+    const p = trends[i];
+    const ts = p.created_at ? p.created_at.slice(0, 19) : "";
+    tbody.innerHTML += "<tr><td>" + p.snapshot_id + "</td><td>" + (p.pricing_input != null ? "$" + p.pricing_input.toFixed(4) : "—") + "</td><td>" + (p.pricing_output != null ? "$" + p.pricing_output.toFixed(4) : "—") + "</td><td>" + (p.pricing_cache_read != null ? "$" + p.pricing_cache_read.toFixed(4) : "—") + "</td><td class='muted'>" + ts + "</td></tr>";
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}AgentPulse — Digest {{ digest_date }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Daily Digest — {{ digest_date }}</h2>
+  <p class="muted">Generated: {{ digest.generated_at[:19] if digest.generated_at else "—" }}</p>
+</div>
+
+<div class="card">
+  <h2>Price Events ({{ digest.price_events_json|length if digest.price_events_json else 0 }})</h2>
+  {% if digest.price_events_json %}
+    <table>
+      <thead><tr><th>Type</th><th>Model</th><th>Field</th><th>Change</th><th>Blended New</th><th>Score</th><th>Grade</th></tr></thead>
+      <tbody>
+        {% for ev in digest.price_events_json %}
+        <tr>
+          <td>{{ ev.event_type }}</td>
+          <td>{{ ev.model_id }}</td>
+          <td>{{ ev.field_name or "—" }}</td>
+          <td>{% if ev.change_pct is not none %}{{ "%+.2f"|format(ev.change_pct) }}%{% else %}—{% endif %}</td>
+          <td>{% if ev.blended_cost_new is not none %}${{ "%.6f"|format(ev.blended_cost_new) }}/1M{% else %}—{% endif %}</td>
+          <td class="score">{{ ev.impact_score }}</td>
+          <td><span class="tag tag-{{ ev.grade }}">{{ ev.grade }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No price events in this digest.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Ecosystem Events ({{ digest.release_events_json|length if digest.release_events_json else 0 }})</h2>
+  {% if digest.release_events_json %}
+    <table>
+      <thead><tr><th>Grade</th><th>Repo</th><th>Tag</th><th>Score</th><th>Deadline</th><th>Migration Steps</th></tr></thead>
+      <tbody>
+        {% for ev in digest.release_events_json %}
+        <tr>
+          <td><span class="tag tag-{{ ev.breaking_grade }}">{{ ev.breaking_grade }}</span></td>
+          <td>{{ ev.repo }}</td>
+          <td>{{ ev.tag }}</td>
+          <td class="score">{{ ev.impact_score }}</td>
+          <td>{% if ev.deadline %}{{ ev.deadline }} ({{ ev.days_remaining }}d){% else %}—{% endif %}</td>
+          <td class="muted">{{ ev.migration_steps[:100] if ev.migration_steps else "需自行排查" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No ecosystem events in this digest.</p>
+  {% endif %}
+</div>
+
+{% if digest.mcp_census_json %}
+<div class="card">
+  <h2>MCP Registry Census</h2>
+  <table>
+    <thead><tr><th>Total</th><th>New</th><th>Deprecated</th><th>Deleted</th><th>Remote Ratio</th><th>Drift</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>{{ digest.mcp_census_json.total }}</td>
+        <td>{{ digest.mcp_census_json.new_count }}</td>
+        <td>{{ digest.mcp_census_json.deprecated }}</td>
+        <td>{{ digest.mcp_census_json.deleted }}</td>
+        <td>{{ "%.2f"|format(digest.mcp_census_json.remote_ratio) }}</td>
+        <td>{{ digest.mcp_census_json.drift_count }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

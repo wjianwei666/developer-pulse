@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}AgentPulse — Home{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Latest Digests</h2>
+  {% if digests %}
+    <table>
+      <thead><tr><th>Date</th><th>Title</th><th>Generated</th></tr></thead>
+      <tbody>
+        {% for d in digests %}
+        <tr>
+          <td><a href="/digest/{{ d.digest_date }}">{{ d.digest_date }}</a></td>
+          <td>{{ d.title }}</td>
+          <td class="muted">{{ d.generated_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No digests yet. Run the digest pipeline to generate one.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent Price Events</h2>
+  {% if recent_price %}
+    <table>
+      <thead><tr><th>Type</th><th>Model</th><th>Field</th><th>Change</th><th>Score</th><th>Detected</th></tr></thead>
+      <tbody>
+        {% for ev in recent_price %}
+        <tr>
+          <td><span class="tag tag-{{ ev.grade }}">{{ ev.event_type }}</span></td>
+          <td>{{ ev.model_id }}</td>
+          <td>{{ ev.field_name or "—" }}</td>
+          <td>
+            {% if ev.change_pct is not none %}
+              {{ "%+.2f"|format(ev.change_pct) }}%
+            {% else %}—{% endif %}
+          </td>
+          <td class="score">{{ ev.impact_score }}</td>
+          <td class="muted">{{ ev.detected_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No price events yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent Ecosystem Events</h2>
+  {% if recent_release %}
+    <table>
+      <thead><tr><th>Grade</th><th>Repo</th><th>Tag</th><th>Score</th><th>Deadline</th><th>Detected</th></tr></thead>
+      <tbody>
+        {% for ev in recent_release %}
+        <tr>
+          <td><span class="tag tag-{{ ev.breaking_grade }}">{{ ev.breaking_grade }}</span></td>
+          <td>{{ ev.repo }}</td>
+          <td>{{ ev.tag }}</td>
+          <td class="score">{{ ev.impact_score }}</td>
+          <td>{{ ev.deadline or "—" }}</td>
+          <td class="muted">{{ ev.detected_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No ecosystem events yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

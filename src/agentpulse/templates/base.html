@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AgentPulse{% endblock %}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0d1117; color: #e6edf3; line-height: 1.6; }
+    header { background: #161b22; border-bottom: 1px solid #30363d; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.3rem; }
+    header h1 a { color: #58a6ff; text-decoration: none; }
+    nav a { color: #8b949e; text-decoration: none; margin-left: 1.5rem; font-size: 0.9rem; }
+    nav a:hover { color: #58a6ff; }
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem; }
+    .card h2 { font-size: 1.1rem; margin-bottom: 0.8rem; color: #58a6ff; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+    .tag-alert { background: #da3633; color: #fff; }
+    .tag-digest { background: #d29922; color: #fff; }
+    .tag-archive { background: #30363d; color: #8b949e; }
+    .tag-breaking { background: #f85149; color: #fff; }
+    .tag-likely { background: #db6d28; color: #fff; }
+    .tag-watch { background: #d29922; color: #fff; }
+    .tag-safe { background: #238636; color: #fff; }
+    .tag-noise { background: #484f58; color: #8b949e; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid #21262d; }
+    th { color: #8b949e; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+    tr:hover { background: #1c2128; }
+    a { color: #58a6ff; }
+    .score { font-weight: 700; }
+    .muted { color: #8b949e; font-size: 0.8rem; }
+    .filter-form { margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center; }
+    input[type="text"] { background: #0d1117; border: 1px solid #30363d; color: #e6edf3; padding: 0.4rem 0.6rem; border-radius: 6px; }
+    button { background: #238636; color: #fff; border: none; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; }
+    footer { text-align: center; padding: 2rem; color: #484f58; font-size: 0.8rem; border-top: 1px solid #21262d; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="/">⚡ AgentPulse</a></h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/price">Prices</a>
+      <a href="/ecosystem">Ecosystem</a>
+      <a href="/rss.xml">RSS</a>
+      <a href="/search.html">Search</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    AgentPulse — AI Agent Ecosystem &amp; Model Price Monitor · AI-generated summaries · Data from upstream snapshots
+  </footer>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}AgentPulse — Ecosystem Events{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Ecosystem Breaking Change Events</h2>
+  <form class="filter-form" method="get" action="/ecosystem">
+    <input type="text" name="repo" placeholder="Filter by repo..." value="{{ repo_filter or '' }}">
+    <button type="submit">Filter</button>
+    <a href="/ecosystem" style="margin-left:1rem;color:#8b949e;font-size:0.85rem;">Clear</a>
+  </form>
+  {% if events %}
+    <table>
+      <thead><tr><th>Grade</th><th>Repo</th><th>Tag</th><th>Score</th><th>Deadline</th><th>Days Left</th><th>Migration</th><th>Detected</th></tr></thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td><span class="tag tag-{{ ev.breaking_grade }}">{{ ev.breaking_grade }}</span></td>
+          <td>{{ ev.repo }}</td>
+          <td><a href="{{ ev.source_url }}" target="_blank">{{ ev.tag }}</a></td>
+          <td class="score">{{ ev.impact_score }}</td>
+          <td>{{ ev.deadline or "—" }}</td>
+          <td>{% if ev.days_remaining is not none %}{{ ev.days_remaining }}d{% else %}—{% endif %}</td>
+          <td class="muted" style="max-width:300px;">{{ ev.migration_steps[:120] if ev.migration_steps else "需自行排查" }}</td>
+          <td class="muted">{{ ev.detected_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No ecosystem events found.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}AgentPulse — Price Events{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Model Price Events</h2>
+  <form class="filter-form" method="get" action="/price">
+    <input type="text" name="model" placeholder="Filter by model ID..." value="{{ model_filter or '' }}">
+    <button type="submit">Filter</button>
+    <a href="/price" style="margin-left:1rem;color:#8b949e;font-size:0.85rem;">Clear</a>
+  </form>
+  {% if events %}
+    <table>
+      <thead><tr><th>Type</th><th>Model</th><th>Field</th><th>Old</th><th>New</th><th>Change</th><th>Blended</th><th>Score</th><th>Grade</th><th>Trend</th><th>Detected</th></tr></thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td>{{ ev.event_type }}</td>
+          <td>{{ ev.model_id }}</td>
+          <td>{{ ev.field_name or "—" }}</td>
+          <td>{{ ev.old_value or "—" }}</td>
+          <td>{{ ev.new_value or "—" }}</td>
+          <td>{% if ev.change_pct is not none %}{{ "%+.2f"|format(ev.change_pct) }}%{% else %}—{% endif %}</td>
+          <td>{% if ev.blended_cost_new is not none %}${{ "%.6f"|format(ev.blended_cost_new) }}{% else %}—{% endif %}</td>
+          <td class="score">{{ ev.impact_score }}</td>
+          <td><span class="tag tag-{{ ev.grade }}">{{ ev.grade }}</span></td>
+          <td><a href="/trends?model={{ ev.model_id | urlencode }}" style="font-size:0.8rem;">📈</a></td>
+          <td class="muted">{{ ev.detected_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No price events found.</p>
+  {% endif %}
+</div>
+{% endblock %}
